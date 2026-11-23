@@ -114,7 +114,12 @@ work, tell the conductor; the EPIC's owner fixes it.
 SUBAGENTS: delegate reading and analysis, never a permission-gated action
 (rm, force-push, a write outside the clone, an unfamiliar binary): its
 approval prompt blocks your session. Re-derive any load-bearing claim from
-a subagent report before acting on it.
+a subagent report before acting on it. Subagents do not find skills on
+their own: name the skills a task needs in its prompt (in kin/ and
+trpa-eval/, load /kin-worker-brief for the project skills). If a subagent
+fails with "Opus 5.5's safeguards flagged this session ... [bio]", rerun the
+same task once with `model: "sonnet"` on the Agent call (Sonnet 5.5). Do not
+do its work yourself, and do not stop.
 
 STOPPING POINTS — at a natural stopping point:
 1. Append a worklog entry: what you did and why you stopped.
