@@ -1,7 +1,7 @@
 ---
 name: surprising-conclusion-skeptic
 description: "Before building on a surprising, strong, or negative result in a PR or experiment, check it for bugs, unfair comparisons, and confounded measurements."
-model: opus
+model: sonnet
 color: yellow
 ---
 
