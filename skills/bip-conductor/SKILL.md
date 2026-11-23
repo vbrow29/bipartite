@@ -279,7 +279,7 @@ It preserves the worklog to `.preserved/`, kills the worker's pane (never the wi
 - `CEREMONY UNKNOWN` → leave the slot.
 
 A loop is live when `.claude/ralph-loop.local.md` exists and its `session_id` is a running session.
-Worktree mode has no helper: `preserve_epic_state`, then `git worktree remove --force $CLONE_ROOT/issue-N && git branch -d <branch>`.
+Worktree mode has no helper (`reclaim_slot` prints `HOLD ... not a clone-mode slot` and changes nothing). By hand: check the PR merged, the tree is clean and the composer is empty, then `preserve_epic_state <slot> $CLONE_ROOT "<reason>"`, kill the worker's pane (`tmux list-panes -a -F '#{pane_id} #{pane_current_path}' | grep -F <slot>`, then `tmux kill-pane -t <id>`), then `git worktree remove --force <slot> && git branch -d <branch>` (`-D` after a squash merge).
 A lost worklog: check `<clone_root>/<clone>/.preserved/`, then `status-spec.md` for rebuilding it from the transcript.
 
 Then spawn through `/bip-conductor-spawn` (never improvised tmux/claude commands) and report after; the proposal is not a gate.
@@ -306,6 +306,7 @@ esac
 
 It emits `needs-human`, `completed`, `awaiting-results` and `quality-gate` by default, any illegal phase always, and `STALLED` for an `awaiting-results` slot with no ralph loop, no turn, shell or monitor running, and status and worklog quiet 45 min.
 It is silent when a slot never transitions (the staleness checks catch that), for phases held at its start (a restart re-baselines, so re-run `/bip-conductor`; clones added later are never seen), and when a slot lands (`/bip-pr-land` deletes the status file).
+`bip fleet watch` exits at start with "no slots resolved" when no `issue-*` directory exists yet, and exits when the last slot lands; the launcher above sends its output to `/dev/null`, so it looks started. After each spawn, run `fleet_watchers` and restart the watcher if it prints nothing.
 So also watch merged PRs, the inbox, and the notifications log. Run each as a Bash `run_in_background` loop that exits on its first event, with no timeout; act on what it printed, then restart it:
 
 ```bash
