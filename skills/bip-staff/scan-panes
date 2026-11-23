@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# scan-panes [--full]: quiet staff scan. Prints a line only for news; prints nothing when quiet.
+#   default: a pane whose last lines show a live dialog (new since last report, or reported over 60 min ago),
+#            plus any stuck-sessions hit.
+#   --full:  one short line per pane whose tail changed since the last --full run (backstop for dialogs
+#            the patterns miss).
+# State lives in $BIP_SCAN_STATE (default ./_ignore/scan-state, so run it from the staff directory).
+# Panes of the staff session itself are skipped: $STAFF_SESSION, else the session of $TMUX_PANE, else "staff".
+set -u
+here=$(cd "$(dirname "$0")" && pwd)
+state=${BIP_SCAN_STATE:-$PWD/_ignore/scan-state}; mkdir -p "$state"
+mode=${1:-dialog}
+self_session=${STAFF_SESSION:-$(tmux display -p -t "${TMUX_PANE:-}" '#{session_name}' 2>/dev/null || echo staff)}
+now=$(date +%s)
+pat='Enter to select|Esc to cancel|Deliver this message to Claude|Yes, I accept|Do you want to'
+
+tmux list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} #{window_name}' | while read -r pane wname; do
+  [ "${pane%%:*}" = "$self_session" ] && continue
+  tail=$(tmux capture-pane -p -t "$pane" 2>/dev/null | grep -v '^\s*$' | grep -v '^[─⏵]' | tail -15)
+  [ -z "$tail" ] && continue
+  # hash without spinner lines and digits, so elapsed-time counters do not look like changes
+  sig=$(printf '%s' "$tail" | grep -v -E 'esc to interrupt|… \(|· \(' | tr -d '0-9' | md5sum | cut -c1-12)
+  key=$(printf '%s' "$pane" | tr ':.' '__')
+  if [ "$mode" = "--full" ]; then
+    f="$state/full-$key"; [ "$(cat "$f" 2>/dev/null)" = "$sig" ] && continue
+    printf '%s' "$sig" > "$f"
+    printf 'CHANGED %s (%s): %s\n' "$pane" "$wname" "$(printf '%s' "$tail" | tail -2 | tr '\n' ' ' | cut -c1-160)"
+  else
+    if printf '%s' "$tail" | grep -Eq "$pat"; then
+      f="$state/dlg-$key"; prev=$(cat "$f" 2>/dev/null); psig=${prev%% *}; pts=${prev##* }
+      if [ "$psig" != "$sig" ] || [ $((now - ${pts:-0})) -gt 3600 ]; then
+        printf '%s %s' "$sig" "$now" > "$f"
+        q=$(printf '%s' "$tail" | grep -E '^[│ ]*[A-Za-z]' | grep -v -E 'Enter to select|Esc to cancel|Type something|Chat about' | head -2 | tr '\n' ' ' | cut -c1-200)
+        printf 'WAITING %s (%s): %s\n' "$pane" "$wname" "$q"
+      fi
+    else
+      rm -f "$state/dlg-$key"
+    fi
+  fi
+done
+if [ "$mode" != "--full" ]; then
+  out=$("$here/../lib/stuck-sessions" 2>&1 | head -3)
+  if [ -n "$out" ]; then
+    sig=$(printf '%s' "$out" | md5sum | cut -c1-12)
+    [ "$(cat "$state/stuck" 2>/dev/null)" != "$sig" ] && { printf '%s' "$sig" > "$state/stuck"; printf 'STUCK %s\n' "$(printf '%s' "$out" | tr '\n' ' ' | cut -c1-200)"; }
+  else rm -f "$state/stuck"; fi
+fi
