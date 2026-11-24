@@ -232,6 +232,8 @@ To narrow one to a primary readout, ask the user first.
 
 ### Step 7: Correcting a live worker — the judgment half
 
+When a worker reports a long job with an ETA, check at ETA + 15 minutes by reading its output path or `nvidia-smi`, not by waiting for a message; the conductor's spawn message is not current state.
+
 When a live worker's scope needs correcting before its next stopping point, the epic decides: durable (changes what it produces: scope, target, artifact, gate criterion) or transient (host load, peer timing, a dependency that landed)?
 - **Durable**: draft a one-line correction and `SendMessage` the conductor to deliver it now; it `SendMessage`s the worker and appends a timestamped, attributed `.epic-worklog.md` entry in the same step (never edits `lead_guidance`). Route it through the conductor even though you could reach the worker, so message and worklog cannot diverge.
 - **Transient**: message only, still through the conductor.

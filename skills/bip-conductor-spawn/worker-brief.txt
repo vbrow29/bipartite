@@ -61,6 +61,7 @@ AWAITING RESULTS — for a long-running experiment:
    `set -o pipefail` through any pipe, never wrap it in `|| echo`, and for
    a remote probe check the status of the whole `ssh` call.
 3. Each ralph-loop iteration: run check_cmd; if not ready, end the turn.
+   Without the ralph-loop plugin (`/ralph-loop:ralph-loop` is not found) nothing re-invokes you: SendMessage the EPIC owner the job, its ETA and its output path, and schedule ScheduleWakeup (CronCreate if no loop) at ETA + 10 minutes whose first action is check_cmd. Never rely on a completion notification alone.
 4. After 3 consecutive check failures, set stop_reason to
    mechanical-blocker and invoke the lead.
 
