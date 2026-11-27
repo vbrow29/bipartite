@@ -32,6 +32,10 @@ Step 2 uses the conductor's occupancy table to scope Group A; Step 6 uses it as 
 - When a live slot holds the work, add its tmux window: `p1344 (1343-peach)`.
 
 
+### Reports are not stopping points
+
+A report step in a skill you ran (`/bip-issue-next`, `/bip-issue-check`) is not the end of your turn. When items that need nothing from the user remain (briefs, follow-up issues), state the report in a line and continue with them; raise a question only for an item that cannot proceed without the answer.
+
 ### Message economy
 
 `/bip-conductor`'s "Message economy" applies here too. Send raw measurements, not conclusions. A drafted worker correction (Step 7) states the change itself, never "re-read the EPIC body."
