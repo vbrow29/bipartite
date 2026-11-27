@@ -32,9 +32,9 @@ Step 2 uses the conductor's occupancy table to scope Group A; Step 6 uses it as 
 - When a live slot holds the work, add its tmux window: `p1344 (1343-peach)`.
 
 
-### Reports are not stopping points
+### Turns end on a needed reply or on nothing left
 
-A report step in a skill you ran (`/bip-issue-next`, `/bip-issue-check`) is not the end of your turn. When items that need nothing from the user remain (briefs, follow-up issues), state the report in a line and continue with them; raise a question only for an item that cannot proceed without the answer.
+A report step in a skill you ran (`/bip-issue-next`, `/bip-issue-check`) is not the end of your turn, and neither is a sent message. When items that need nothing from the user remain (briefs, follow-up issues), state the report in a line and continue with them; raise a question only for an item that cannot proceed without the answer. Never end a turn on "unless you object" or "I will do X next": do X now, because nothing wakes an idle session unless a reply arrives. End a turn on a reply you named and need, saying whose and by when, or when nothing is left.
 
 ### Message economy
 
